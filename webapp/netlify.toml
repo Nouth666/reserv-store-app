@@ -1,0 +1,10 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Специально НЕ добавляем заголовок X-Frame-Options — Telegram открывает
+# мини-приложение внутри своего интерфейса (в iframe/WebView), и этот
+# заголовок мог бы это заблокировать.

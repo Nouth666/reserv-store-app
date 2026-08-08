@@ -1,0 +1,10 @@
+{
+  "name": "revers-store-webapp",
+  "private": true,
+  "version": "1.0.0",
+  "description": "REVERS STORE — мини-приложение (каталог/корзина) и админ-панель для Telegram, сайт на Netlify",
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "@netlify/blobs": "^8.1.0"
+  }
+}

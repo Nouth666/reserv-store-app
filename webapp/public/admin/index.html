@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>REVERS STORE — Админ-панель</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#000; --card:#111214; --line:#232427; --text:#fff; --muted:#8a8d93;
+    --accent:#2f9e97; --accent2:#3bbdb4; --danger:#e5484d; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+  body{padding-bottom:80px;}
+  h1,h2,h3{margin:0 0 10px;}
+  input,textarea,select{width:100%; background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:11px 12px; color:var(--text); font-size:14px; font-family:inherit; margin-bottom:12px;}
+  textarea{resize:vertical; min-height:70px;}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px;}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:12px 16px; border-radius:11px;
+    border:none; font-weight:700; font-size:13px; cursor:pointer;}
+  .btn-primary{background:var(--accent); color:#fff; width:100%;}
+  .btn-outline{background:transparent; border:1px solid var(--line); color:var(--text);}
+  .btn-danger{background:transparent; border:1px solid var(--danger); color:var(--danger);}
+  .btn-sm{padding:8px 12px; font-size:12px;}
+  .row{display:flex; gap:10px;}
+  .row > *{flex:1;}
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line);}
+  .switch{width:42px; height:24px; border-radius:12px; background:var(--line); position:relative; border:none; flex:none;}
+  .switch.on{background:var(--accent);}
+  .switch::after{content:""; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:.15s;}
+  .switch.on::after{left:20px;}
+
+  .topbar{position:sticky; top:0; z-index:10; background:var(--bg); border-bottom:1px solid var(--line); padding:14px 16px;}
+  .brand{font-weight:800; font-size:18px;}
+  .brand small{display:block; color:var(--muted); font-size:11px; font-weight:500;}
+  .tabs{display:flex; gap:8px; overflow-x:auto; padding:10px 16px; border-bottom:1px solid var(--line); scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex:none; padding:8px 14px; border-radius:20px; background:var(--card); border:1px solid var(--line);
+    color:var(--muted); font-size:13px;}
+  .tab.active{background:#fff; color:#000; font-weight:700; border-color:#fff;}
+  .content{padding:16px;}
+
+  .list-item{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px;
+    display:flex; align-items:center; gap:12px;}
+  .list-item img{width:46px; height:46px; border-radius:8px; object-fit:cover; background:#1a1b1e; flex:none;}
+  .li-main{flex:1; min-width:0;}
+  .li-title{font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .li-sub{font-size:12px; color:var(--muted); margin-top:2px;}
+  .li-actions{display:flex; gap:6px; flex:none;}
+  .icon-only{background:var(--card); border:1px solid var(--line); color:var(--text); width:34px; height:34px; border-radius:8px;}
+
+  .fab{position:fixed; right:16px; bottom:16px; z-index:20; background:var(--accent); color:#fff; border:none;
+    border-radius:16px; padding:14px 20px; font-weight:800; font-size:14px; box-shadow:0 6px 20px rgba(0,0,0,.5);}
+
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:60; display:none;}
+  .modal-overlay.open{display:block;}
+  .modal{position:fixed; left:0; right:0; bottom:0; top:6vh; z-index:61; background:var(--bg); border-radius:18px 18px 0 0;
+    overflow-y:auto; transform:translateY(100%); transition:transform .2s;}
+  .modal.open{transform:translateY(0);}
+  .modal-header{position:sticky; top:0; background:var(--bg); display:flex; justify-content:space-between; align-items:center;
+    padding:16px; border-bottom:1px solid var(--line); z-index:2;}
+  .modal-body{padding:16px 16px 40px;}
+
+  .thumbs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+  .thumb{position:relative; width:70px; height:70px; border-radius:10px; overflow:hidden; background:#1a1b1e; border:1px solid var(--line);}
+  .thumb img{width:100%; height:100%; object-fit:cover;}
+  .thumb .rm{position:absolute; top:2px; right:2px; background:rgba(0,0,0,.7); color:#fff; border:none;
+    width:20px; height:20px; border-radius:50%; font-size:12px; line-height:1;}
+  .thumb-add{width:70px; height:70px; border-radius:10px; border:1px dashed var(--line); background:var(--card);
+    color:var(--muted); font-size:22px; display:flex; align-items:center; justify-content:center;}
+
+  .variant-row{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
+  .variant-row input{margin-bottom:0;}
+  .variant-row button{flex:none; background:none; border:none; color:var(--danger); font-size:18px;}
+
+  .empty{padding:60px 20px; text-align:center; color:var(--muted);}
+  .spinner{width:24px; height:24px; border:3px solid var(--line); border-top-color:var(--accent2);
+    border-radius:50%; animation:spin .7s linear infinite; margin:40px auto;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .toast{position:fixed; left:16px; right:16px; bottom:20px; z-index:90; background:#1c1d20; color:#fff;
+    padding:12px 16px; border-radius:12px; font-size:13px; text-align:center; border:1px solid var(--line);
+    opacity:0; transform:translateY(10px); transition:.2s;}
+  .toast.show{opacity:1; transform:translateY(0);}
+  .status-pill{font-size:11px; padding:3px 8px; border-radius:8px; background:var(--card); border:1px solid var(--line); color:var(--muted);}
+  .status-pill.new{color:var(--accent2); border-color:var(--accent);}
+</style>
+</head>
+<body>
+
+<div id="root">
+  <div class="spinner"></div>
+</div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); try{tg.setHeaderColor('#000000'); tg.setBackgroundColor('#000000');}catch(e){} }
+const initData = tg ? tg.initData : "";
+
+let state = {
+  tab: "products",
+  me: null,
+  categories: [],
+  products: [],
+  orders: [],
+  settings: {},
+  editing: null, // product being edited in modal, or "new"
+};
+
+async function api(path, opts={}){
+  const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
+  if (initData) headers["X-Telegram-Init-Data"] = initData;
+  const res = await fetch(path, Object.assign({}, opts, {headers}));
+  let data = {};
+  try{ data = await res.json(); }catch(e){}
+  if (!res.ok) throw new Error(data.error || ("Ошибка " + res.status));
+  return data;
+}
+
+function escapeHtml(s){
+  return (s||"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function showToast(msg){
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add("show"));
+  setTimeout(()=>{t.classList.remove("show"); setTimeout(()=>t.remove(),300);}, 2500);
+}
+
+async function init(){
+  if (!initData){
+    document.getElementById("root").innerHTML = `<div class="empty">Откройте админ-панель через кнопку в Telegram-боте (нужна проверка личности владельца).</div>`;
+    return;
+  }
+  try{
+    const me = await api("/api/admin/me");
+    state.me = me;
+  }catch(e){
+    document.getElementById("root").innerHTML = `<div class="empty">Доступ запрещён: ${escapeHtml(e.message)}<br><br>Эта админка доступна только владельцу магазина.</div>`;
+    return;
+  }
+  await Promise.all([loadCategories(), loadProducts()]);
+  render();
+}
+
+async function loadCategories(){ state.categories = await api("/api/admin/categories"); }
+async function loadProducts(){ state.products = await api("/api/admin/products"); }
+async function loadOrders(){ state.orders = await api("/api/admin/orders"); }
+async function loadSettings(){ state.settings = await api("/api/admin/settings"); }
+
+function render(){
+  const root = document.getElementById("root");
+  root.innerHTML = `
+    <div class="topbar">
+      <div class="brand">REVERS STORE<small>Админ-панель · ${escapeHtml((state.me.shop&&state.me.shop.shop_name)||'')}</small></div>
+    </div>
+    <div class="tabs">
+      ${tabBtn('products','Товары')}
+      ${tabBtn('categories','Категории')}
+      ${tabBtn('orders','Заказы')}
+      ${tabBtn('settings','Настройки')}
+    </div>
+    <div class="content" id="tabContent"></div>
+  `;
+  renderTab();
+}
+function tabBtn(id,label){
+  return `<button class="tab ${state.tab===id?'active':''}" onclick="switchTab('${id}')">${label}</button>`;
+}
+async function switchTab(id){
+  state.tab = id;
+  render();
+}
+
+async function renderTab(){
+  const el = document.getElementById("tabContent");
+  if (state.tab === "products") return renderProducts(el);
+  if (state.tab === "categories") return renderCategories(el);
+  if (state.tab === "orders"){ el.innerHTML = '<div class="spinner"></div>'; await loadOrders(); return renderOrders(el); }
+  if (state.tab === "settings"){ el.innerHTML = '<div class="spinner"></div>'; await loadSettings(); return renderSettings(el); }
+}
+
+// ---------------- PRODUCTS ----------------
+
+function renderProducts(el){
+  el.innerHTML = `
+    ${state.products.length ? state.products.map(p => `
+      <div class="list-item">
+        ${p.photos&&p.photos[0] ? `<img src="${p.photos[0]}">` : `<div style="width:46px;height:46px;border-radius:8px;background:#1a1b1e"></div>`}
+        <div class="li-main">
+          <div class="li-title">${p.is_hidden?'🚫 ':''}${escapeHtml(p.name)}</div>
+          <div class="li-sub">${money(p.price)} · остаток: ${p.total_stock} · ${p.is_new?'новинка ':''}${p.is_sale?'sale':''}</div>
+        </div>
+        <div class="li-actions">
+          <button class="icon-only" onclick="openProductForm(${p.id})">✏️</button>
+          <button class="icon-only" onclick="deleteProduct(${p.id})">🗑</button>
+        </div>
+      </div>
+    `).join("") : '<div class="empty">Товаров пока нет</div>'}
+    <div style="height:70px"></div>
+    <button class="fab" onclick="openProductForm(null)">+ Товар</button>
+  `;
+}
+
+function money(v){ return Math.round(v).toLocaleString("ru-RU") + " " + (state.settings.currency || "₽"); }
+
+let formPhotos = []; // [{key,url}]
+let formVariants = []; // [{size,stock_qty}]
+let uploading = false;
+
+async function openProductForm(id){
+  let p = null;
+  if (id){
+    p = await api("/api/admin/products/" + id);
+  }
+  state.editing = p || { name:"", brand:"", price:0, description:"", material:"", category_id:null,
+    is_new:0, is_sale:0, sale_discount:10, is_hidden:0, photos:[], variants:[] };
+  formPhotos = (state.editing.photos||[]).map(url => ({key: extractKey(url), url}));
+  formVariants = (state.editing.variants||[]).map(v => ({size:v.size, stock_qty:v.stock_qty}));
+  if (!formVariants.length) formVariants = [{size:"", stock_qty:1}];
+  renderProductModal();
+}
+function extractKey(url){
+  const m = url.match(/\/api\/image\/b\/([^?]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+function closeProductForm(){
+  document.getElementById("productModalOverlay").classList.remove("open");
+  document.getElementById("productModal").classList.remove("open");
+}
+
+function renderProductModal(){
+  const p = state.editing;
+  const overlay = document.getElementById("productModalOverlay") || document.createElement("div");
+  overlay.id = "productModalOverlay"; overlay.className = "modal-overlay open";
+  overlay.onclick = closeProductForm;
+  document.body.appendChild(overlay);
+
+  const modal = document.getElementById("productModal") || document.createElement("div");
+  modal.id = "productModal"; modal.className = "modal open";
+  modal.innerHTML = `
+    <div class="modal-header">
+      <h3>${p.id ? "Редактировать товар" : "Новый товар"}</h3>
+      <button class="icon-only" onclick="closeProductForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>Фотографии</label>
+      <div class="thumbs" id="thumbs"></div>
+      <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="onFilesSelected(this.files)">
+
+      <label>Название</label>
+      <input id="f_name" value="${escapeHtml(p.name)}">
+      <label>Бренд</label>
+      <input id="f_brand" value="${escapeHtml(p.brand||'')}">
+      <div class="row">
+        <div><label>Цена, ${state.settings.currency||'₽'}</label><input id="f_price" type="number" value="${p.price||0}"></div>
+        <div><label>Категория</label>
+          <select id="f_category">
+            <option value="">Без категории</option>
+            ${state.categories.map(c=>`<option value="${c.id}" ${p.category_id===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+      <label>Материал</label>
+      <input id="f_material" value="${escapeHtml(p.material||'')}">
+      <label>Описание</label>
+      <textarea id="f_description">${escapeHtml(p.description||'')}</textarea>
+
+      <label>Размеры и остатки</label>
+      <div id="variantsBox"></div>
+      <button class="btn btn-outline btn-sm" onclick="addVariantRow()">+ Размер</button>
+
+      <div style="height:16px"></div>
+      <div class="toggle-row"><span>Новинка</span><button class="switch ${p.is_new?'on':''}" id="sw_new" onclick="toggleSwitch('sw_new')"></button></div>
+      <div class="toggle-row"><span>SALE</span><button class="switch ${p.is_sale?'on':''}" id="sw_sale" onclick="toggleSwitch('sw_sale', true)"></button></div>
+      <div id="discountRow" style="${p.is_sale?'':'display:none'}">
+        <label>Скидка, %</label><input id="f_discount" type="number" value="${p.sale_discount||10}">
+      </div>
+      <div class="toggle-row"><span>Скрыт из каталога</span><button class="switch ${p.is_hidden?'on':''}" id="sw_hidden" onclick="toggleSwitch('sw_hidden')"></button></div>
+
+      <div style="height:20px"></div>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveProduct()">Сохранить</button>
+      ${p.id ? `<div style="height:10px"></div><button class="btn btn-danger" style="width:100%" onclick="deleteProduct(${p.id}, true)">Удалить товар</button>` : ""}
+    </div>
+  `;
+  document.body.appendChild(modal);
+  renderThumbs();
+  renderVariants();
+}
+
+function toggleSwitch(id, isSaleToggle){
+  const el = document.getElementById(id);
+  el.classList.toggle("on");
+  if (isSaleToggle){
+    document.getElementById("discountRow").style.display = el.classList.contains("on") ? "block" : "none";
+  }
+}
+
+function renderThumbs(){
+  const box = document.getElementById("thumbs");
+  box.innerHTML = formPhotos.map((ph, i) => `
+    <div class="thumb"><img src="${ph.url}"><button class="rm" onclick="removePhoto(${i})">✕</button></div>
+  `).join("") + `<button class="thumb-add" onclick="document.getElementById('fileInput').click()">${uploading?'…':'+'}</button>`;
+}
+function removePhoto(i){ formPhotos.splice(i,1); renderThumbs(); }
+
+async function onFilesSelected(files){
+  uploading = true; renderThumbs();
+  for (const file of files){
+    try{
+      const fd = new FormData();
+      fd.append("file", file);
+      const headers = {};
+      if (initData) headers["X-Telegram-Init-Data"] = initData;
+      const res = await fetch("/api/admin/upload", {method:"POST", body:fd, headers});
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Ошибка загрузки");
+      formPhotos.push({key:data.key, url:data.url});
+    }catch(e){ showToast(e.message); }
+  }
+  uploading = false;
+  renderThumbs();
+}
+
+function renderVariants(){
+  const box = document.getElementById("variantsBox");
+  box.innerHTML = formVariants.map((v,i) => `
+    <div class="variant-row">
+      <input placeholder="Размер (S, M, 42...)" value="${escapeHtml(v.size)}" oninput="formVariants[${i}].size=this.value">
+      <input type="number" placeholder="Остаток" value="${v.stock_qty}" style="max-width:100px" oninput="formVariants[${i}].stock_qty=this.value">
+      <button onclick="removeVariantRow(${i})">✕</button>
+    </div>
+  `).join("");
+}
+function addVariantRow(){ formVariants.push({size:"", stock_qty:1}); renderVariants(); }
+function removeVariantRow(i){ formVariants.splice(i,1); renderVariants(); }
+
+async function saveProduct(){
+  const btn = document.getElementById("saveBtn");
+  const p = state.editing;
+  const payload = {
+    name: document.getElementById("f_name").value.trim(),
+    brand: document.getElementById("f_brand").value.trim(),
+    price: Number(document.getElementById("f_price").value) || 0,
+    category_id: document.getElementById("f_category").value || null,
+    material: document.getElementById("f_material").value.trim(),
+    description: document.getElementById("f_description").value.trim(),
+    is_new: document.getElementById("sw_new").classList.contains("on") ? 1 : 0,
+    is_sale: document.getElementById("sw_sale").classList.contains("on") ? 1 : 0,
+    sale_discount: Number(document.getElementById("f_discount").value) || 0,
+    is_hidden: document.getElementById("sw_hidden").classList.contains("on") ? 1 : 0,
+    photos: formPhotos.filter(p=>p.key).map(p => ({key:p.key})),
+    variants: formVariants.filter(v=>v.size),
+  };
+  if (!payload.name){ showToast("Укажите название товара"); return; }
+  btn.disabled = true; btn.textContent = "Сохраняем...";
+  try{
+    if (p.id) await api("/api/admin/products/" + p.id, {method:"PUT", body:JSON.stringify(payload)});
+    else await api("/api/admin/products", {method:"POST", body:JSON.stringify(payload)});
+    closeProductForm();
+    await loadProducts();
+    renderTab();
+    showToast("Сохранено");
+  }catch(e){
+    showToast(e.message);
+    btn.disabled = false; btn.textContent = "Сохранить";
+  }
+}
+
+async function deleteProduct(id, fromModal){
+  if (!confirm("Удалить товар безвозвратно?")) return;
+  try{
+    await api("/api/admin/products/" + id, {method:"DELETE"});
+    if (fromModal) closeProductForm();
+    await loadProducts();
+    renderTab();
+    showToast("Товар удалён");
+  }catch(e){ showToast(e.message); }
+}
+
+// ---------------- CATEGORIES ----------------
+
+function renderCategories(el){
+  el.innerHTML = `
+    ${state.categories.length ? state.categories.map(c => `
+      <div class="list-item">
+        <div class="li-main"><div class="li-title">${escapeHtml(c.name)}</div></div>
+        <div class="li-actions">
+          <button class="icon-only" onclick="renameCategory(${c.id}, '${escapeHtml(c.name).replace(/'/g,"\\'")}')">✏️</button>
+          <button class="icon-only" onclick="deleteCategory(${c.id})">🗑</button>
+        </div>
+      </div>
+    `).join("") : '<div class="empty">Категорий пока нет</div>'}
+    <div style="height:16px"></div>
+    <div class="row">
+      <input id="newCategoryName" placeholder="Название новой категории">
+    </div>
+    <button class="btn btn-primary" onclick="addCategory()">+ Добавить категорию</button>
+  `;
+}
+async function addCategory(){
+  const input = document.getElementById("newCategoryName");
+  const name = input.value.trim();
+  if (!name) return;
+  try{
+    await api("/api/admin/categories", {method:"POST", body:JSON.stringify({name})});
+    await loadCategories();
+    renderTab();
+    showToast("Категория добавлена");
+  }catch(e){ showToast(e.message); }
+}
+async function renameCategory(id, oldName){
+  const name = prompt("Новое название категории:", oldName);
+  if (!name || name===oldName) return;
+  try{
+    await api("/api/admin/categories/" + id, {method:"PUT", body:JSON.stringify({name})});
+    await loadCategories();
+    renderTab();
+  }catch(e){ showToast(e.message); }
+}
+async function deleteCategory(id){
+  if (!confirm("Удалить категорию?")) return;
+  try{
+    await api("/api/admin/categories/" + id, {method:"DELETE"});
+    await loadCategories();
+    renderTab();
+  }catch(e){ showToast(e.message); }
+}
+
+// ---------------- ORDERS ----------------
+
+const STATUS_LABELS = {new:"Новый", confirmed:"Подтверждён", shipped:"Отправлен", done:"Завершён", cancelled:"Отменён"};
+
+function renderOrders(el){
+  if (!state.orders.length){ el.innerHTML = '<div class="empty">Заказов пока нет</div>'; return; }
+  el.innerHTML = state.orders.map(o => `
+    <div class="list-item" style="align-items:flex-start; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:6px;">
+        <b>Заказ #${o.id}</b>
+        <span class="status-pill ${o.status==='new'?'new':''}">${STATUS_LABELS[o.status]||o.status}</span>
+      </div>
+      <div class="li-sub">${escapeHtml(o.full_name||'')} ${o.username?('@'+escapeHtml(o.username)):''} · ${new Date(o.created_at).toLocaleString('ru-RU')}</div>
+      <div class="li-sub" style="margin:6px 0;">${(o.items||[]).map(i=>`${escapeHtml(i.product_name)}${i.size?` (${i.size})`:''} × ${i.qty}`).join(', ')}</div>
+      <div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-top:6px;">
+        <b>${money(o.total)}</b>
+        <select style="width:auto; margin:0; padding:6px 8px;" onchange="updateOrderStatus(${o.id}, this.value)">
+          ${Object.entries(STATUS_LABELS).map(([v,l])=>`<option value="${v}" ${o.status===v?'selected':''}>${l}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+  `).join("");
+}
+async function updateOrderStatus(id, status){
+  try{
+    await api("/api/admin/orders/" + id, {method:"PUT", body:JSON.stringify({status})});
+    showToast("Статус обновлён");
+    await loadOrders();
+    renderTab();
+  }catch(e){ showToast(e.message); }
+}
+
+// ---------------- SETTINGS ----------------
+
+const SETTINGS_FIELDS = [
+  ["shop_name","Название магазина"], ["description","Описание"],
+  ["seller_username","Telegram продавца (без @)"], ["phone","Телефон"],
+  ["telegram_channel","Telegram-канал"], ["website","Сайт"],
+  ["social_links","Соцсети"], ["delivery_info","Информация о доставке"],
+  ["work_hours","Часы работы"], ["currency","Валюта (символ)"],
+];
+
+function renderSettings(el){
+  const s = state.settings;
+  el.innerHTML = SETTINGS_FIELDS.map(([field,label]) => `
+    <label>${label}</label>
+    ${field==='description'||field==='delivery_info' ? `<textarea id="s_${field}">${escapeHtml(s[field]||'')}</textarea>`
+      : `<input id="s_${field}" value="${escapeHtml(s[field]||'')}">`}
+  `).join("") + `<button class="btn btn-primary" onclick="saveSettings()">Сохранить настройки</button>`;
+}
+async function saveSettings(){
+  const payload = {};
+  for (const [field] of SETTINGS_FIELDS) payload[field] = document.getElementById("s_"+field).value;
+  try{
+    state.settings = await api("/api/admin/settings", {method:"PUT", body:JSON.stringify(payload)});
+    showToast("Настройки сохранены");
+  }catch(e){ showToast(e.message); }
+}
+
+init();
+</script>
+</body>
+</html>
