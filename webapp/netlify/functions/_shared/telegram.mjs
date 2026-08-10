@@ -64,8 +64,9 @@ export function getVerifiedUser(req) {
  */
 export function isAdminUser(user) {
   if (!user) return false;
-  const adminId = process.env.ADMIN_ID || "";
-  return String(user.id) === String(adminId);
+  const adminIdsRaw = process.env.ADMIN_IDS || process.env.ADMIN_ID || "";
+  const adminIds = adminIdsRaw.split(",").map(s => s.trim()).filter(Boolean);
+  return adminIds.includes(String(user.id));
 }
 
 /**
