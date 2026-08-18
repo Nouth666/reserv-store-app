@@ -67,9 +67,8 @@
   .full-page.open{display:block;}
   .pd-header{position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; padding:14px 16px;
     background:linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0));}
-  .pd-gallery{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none;}
-  .pd-gallery::-webkit-scrollbar{display:none;}
-  .pd-gallery img{width:100vw; height:100vw; object-fit:cover; scroll-snap-align:start; flex:none; background:#1a1b1e;}
+  .pd-gallery{position:relative; width:100vw; height:100vw; user-select:none;}
+  .pd-gallery img{width:100vw; height:100vw; object-fit:cover; display:block; background:#1a1b1e; pointer-events:none;}
   .pd-dots{display:flex; justify-content:center; gap:6px; margin-top:8px;}
   .pd-dots span{width:6px; height:6px; border-radius:50%; background:var(--line);}
   .pd-dots span.on{background:#fff;}
@@ -351,9 +350,10 @@ function renderProductPage(){
   const photos = p.photos && p.photos.length ? p.photos : [""];
   const dots = photos.map((_, i) => `<span class="${i===state.currentPhotoIndex?'on':''}"></span>`).join("");
   const sizes = p.variants || [];
+  const currentSrc = photos[state.currentPhotoIndex] || "";
   document.getElementById("productContent").innerHTML = `
-    <div class="pd-gallery" id="gallery">
-      ${photos.map(src => src ? `<img src="${src}">` : `<div style="width:100vw;height:100vw;background:#1a1b1e"></div>`).join("")}
+    <div class="pd-gallery" id="gallery" onclick="onGalleryTap(event)">
+      ${currentSrc ? `<img src="${currentSrc}">` : `<div style="width:100vw;height:100vw;background:#1a1b1e"></div>`}
     </div>
     ${photos.length>1?`<div class="pd-dots">${dots}</div>`:""}
     <div class="pd-body">
@@ -385,11 +385,19 @@ function renderProductPage(){
       </button>
     </div>
   `;
-  const gallery = document.getElementById("gallery");
-  if (gallery) gallery.onscroll = () => {
-    const idx = Math.round(gallery.scrollLeft / gallery.clientWidth);
-    if (idx !== state.currentPhotoIndex){ state.currentPhotoIndex = idx; renderProductPage(); }
-  };
+}
+ 
+function onGalleryTap(e){
+  const photos = (state.currentProduct.photos && state.currentProduct.photos.length) ? state.currentProduct.photos : [""];
+  if (photos.length <= 1) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  if (x < rect.width / 2){
+    state.currentPhotoIndex = (state.currentPhotoIndex - 1 + photos.length) % photos.length;
+  } else {
+    state.currentPhotoIndex = (state.currentPhotoIndex + 1) % photos.length;
+  }
+  renderProductPage();
 }
  
 function selectVariant(variantId){
