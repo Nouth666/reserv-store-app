@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -32,7 +32,6 @@
   .switch.on{background:var(--accent);}
   .switch::after{content:""; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:.15s;}
   .switch.on::after{left:20px;}
-
   .topbar{position:sticky; top:0; z-index:10; background:var(--bg); border-bottom:1px solid var(--line); padding:14px 16px;}
   .brand{font-weight:800; font-size:18px;}
   .brand small{display:block; color:var(--muted); font-size:11px; font-weight:500;}
@@ -42,7 +41,6 @@
     color:var(--muted); font-size:13px;}
   .tab.active{background:#fff; color:#000; font-weight:700; border-color:#fff;}
   .content{padding:16px;}
-
   .list-item{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px;
     display:flex; align-items:center; gap:12px;}
   .list-item img{width:46px; height:46px; border-radius:8px; object-fit:cover; background:#1a1b1e; flex:none;}
@@ -51,10 +49,8 @@
   .li-sub{font-size:12px; color:var(--muted); margin-top:2px;}
   .li-actions{display:flex; gap:6px; flex:none;}
   .icon-only{background:var(--card); border:1px solid var(--line); color:var(--text); width:34px; height:34px; border-radius:8px;}
-
   .fab{position:fixed; right:16px; bottom:16px; z-index:20; background:var(--accent); color:#fff; border:none;
     border-radius:16px; padding:14px 20px; font-weight:800; font-size:14px; box-shadow:0 6px 20px rgba(0,0,0,.5);}
-
   .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:60; display:none;}
   .modal-overlay.open{display:block;}
   .modal{position:fixed; left:0; right:0; bottom:0; top:6vh; z-index:61; background:var(--bg); border-radius:18px 18px 0 0;
@@ -63,7 +59,6 @@
   .modal-header{position:sticky; top:0; background:var(--bg); display:flex; justify-content:space-between; align-items:center;
     padding:16px; border-bottom:1px solid var(--line); z-index:2;}
   .modal-body{padding:16px 16px 40px;}
-
   .thumbs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
   .thumb{position:relative; width:70px; height:70px; border-radius:10px; overflow:hidden; background:#1a1b1e; border:1px solid var(--line);}
   .thumb img{width:100%; height:100%; object-fit:cover;}
@@ -71,11 +66,9 @@
     width:20px; height:20px; border-radius:50%; font-size:12px; line-height:1;}
   .thumb-add{width:70px; height:70px; border-radius:10px; border:1px dashed var(--line); background:var(--card);
     color:var(--muted); font-size:22px; display:flex; align-items:center; justify-content:center;}
-
   .variant-row{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
   .variant-row input{margin-bottom:0;}
   .variant-row button{flex:none; background:none; border:none; color:var(--danger); font-size:18px;}
-
   .empty{padding:60px 20px; text-align:center; color:var(--muted);}
   .spinner{width:24px; height:24px; border:3px solid var(--line); border-top-color:var(--accent2);
     border-radius:50%; animation:spin .7s linear infinite; margin:40px auto;}
@@ -89,16 +82,13 @@
 </style>
 </head>
 <body>
-
 <div id="root">
   <div class="spinner"></div>
 </div>
-
 <script>
 const tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.ready(); tg.expand(); try{tg.setHeaderColor('#000000'); tg.setBackgroundColor('#000000');}catch(e){} }
 const initData = tg ? tg.initData : "";
-
 let state = {
   tab: "products",
   me: null,
@@ -108,7 +98,6 @@ let state = {
   settings: {},
   editing: null, // product being edited in modal, or "new"
 };
-
 async function api(path, opts={}){
   const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
   if (initData) headers["X-Telegram-Init-Data"] = initData;
@@ -118,7 +107,6 @@ async function api(path, opts={}){
   if (!res.ok) throw new Error(data.error || ("Ошибка " + res.status));
   return data;
 }
-
 function escapeHtml(s){
   return (s||"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -129,7 +117,6 @@ function showToast(msg){
   requestAnimationFrame(()=>t.classList.add("show"));
   setTimeout(()=>{t.classList.remove("show"); setTimeout(()=>t.remove(),300);}, 2500);
 }
-
 async function init(){
   if (!initData){
     document.getElementById("root").innerHTML = `<div class="empty">Откройте админ-панель через кнопку в Telegram-боте (нужна проверка личности владельца).</div>`;
@@ -145,12 +132,10 @@ async function init(){
   await Promise.all([loadCategories(), loadProducts()]);
   render();
 }
-
 async function loadCategories(){ state.categories = await api("/api/admin/categories"); }
 async function loadProducts(){ state.products = await api("/api/admin/products"); }
 async function loadOrders(){ state.orders = await api("/api/admin/orders"); }
 async function loadSettings(){ state.settings = await api("/api/admin/settings"); }
-
 function render(){
   const root = document.getElementById("root");
   root.innerHTML = `
@@ -174,7 +159,6 @@ async function switchTab(id){
   state.tab = id;
   render();
 }
-
 async function renderTab(){
   const el = document.getElementById("tabContent");
   if (state.tab === "products") return renderProducts(el);
@@ -182,9 +166,7 @@ async function renderTab(){
   if (state.tab === "orders"){ el.innerHTML = '<div class="spinner"></div>'; await loadOrders(); return renderOrders(el); }
   if (state.tab === "settings"){ el.innerHTML = '<div class="spinner"></div>'; await loadSettings(); return renderSettings(el); }
 }
-
 // ---------------- PRODUCTS ----------------
-
 function renderProducts(el){
   el.innerHTML = `
     ${state.products.length ? state.products.map(p => `
@@ -204,13 +186,10 @@ function renderProducts(el){
     <button class="fab" onclick="openProductForm(null)">+ Товар</button>
   `;
 }
-
 function money(v){ return Math.round(v).toLocaleString("ru-RU") + " " + (state.settings.currency || "₽"); }
-
 let formPhotos = []; // [{key,url}]
 let formVariants = []; // [{size,stock_qty}]
 let uploading = false;
-
 async function openProductForm(id){
   let p = null;
   if (id){
@@ -231,14 +210,12 @@ function closeProductForm(){
   document.getElementById("productModalOverlay").classList.remove("open");
   document.getElementById("productModal").classList.remove("open");
 }
-
 function renderProductModal(){
   const p = state.editing;
   const overlay = document.getElementById("productModalOverlay") || document.createElement("div");
   overlay.id = "productModalOverlay"; overlay.className = "modal-overlay open";
   overlay.onclick = closeProductForm;
   document.body.appendChild(overlay);
-
   const modal = document.getElementById("productModal") || document.createElement("div");
   modal.id = "productModal"; modal.className = "modal open";
   modal.innerHTML = `
@@ -250,7 +227,6 @@ function renderProductModal(){
       <label>Фотографии</label>
       <div class="thumbs" id="thumbs"></div>
       <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="onFilesSelected(this.files)">
-
       <label>Название</label>
       <input id="f_name" value="${escapeHtml(p.name)}">
       <label>Бренд</label>
@@ -264,15 +240,13 @@ function renderProductModal(){
           </select>
         </div>
       </div>
-      <label>Материал</label>
+      <label>Состояние</label>
       <input id="f_material" value="${escapeHtml(p.material||'')}">
       <label>Описание</label>
       <textarea id="f_description">${escapeHtml(p.description||'')}</textarea>
-
       <label>Размеры и остатки</label>
       <div id="variantsBox"></div>
       <button class="btn btn-outline btn-sm" onclick="addVariantRow()">+ Размер</button>
-
       <div style="height:16px"></div>
       <div class="toggle-row"><span>Новинка</span><button class="switch ${p.is_new?'on':''}" id="sw_new" onclick="toggleSwitch('sw_new')"></button></div>
       <div class="toggle-row"><span>SALE</span><button class="switch ${p.is_sale?'on':''}" id="sw_sale" onclick="toggleSwitch('sw_sale', true)"></button></div>
@@ -280,7 +254,6 @@ function renderProductModal(){
         <label>Скидка, %</label><input id="f_discount" type="number" value="${p.sale_discount||10}">
       </div>
       <div class="toggle-row"><span>Скрыт из каталога</span><button class="switch ${p.is_hidden?'on':''}" id="sw_hidden" onclick="toggleSwitch('sw_hidden')"></button></div>
-
       <div style="height:20px"></div>
       <button class="btn btn-primary" id="saveBtn" onclick="saveProduct()">Сохранить</button>
       ${p.id ? `<div style="height:10px"></div><button class="btn btn-danger" style="width:100%" onclick="deleteProduct(${p.id}, true)">Удалить товар</button>` : ""}
@@ -290,7 +263,6 @@ function renderProductModal(){
   renderThumbs();
   renderVariants();
 }
-
 function toggleSwitch(id, isSaleToggle){
   const el = document.getElementById(id);
   el.classList.toggle("on");
@@ -298,7 +270,6 @@ function toggleSwitch(id, isSaleToggle){
     document.getElementById("discountRow").style.display = el.classList.contains("on") ? "block" : "none";
   }
 }
-
 function renderThumbs(){
   const box = document.getElementById("thumbs");
   box.innerHTML = formPhotos.map((ph, i) => `
@@ -306,7 +277,6 @@ function renderThumbs(){
   `).join("") + `<button class="thumb-add" onclick="document.getElementById('fileInput').click()">${uploading?'…':'+'}</button>`;
 }
 function removePhoto(i){ formPhotos.splice(i,1); renderThumbs(); }
-
 async function onFilesSelected(files){
   uploading = true; renderThumbs();
   for (const file of files){
@@ -324,7 +294,6 @@ async function onFilesSelected(files){
   uploading = false;
   renderThumbs();
 }
-
 function renderVariants(){
   const box = document.getElementById("variantsBox");
   box.innerHTML = formVariants.map((v,i) => `
@@ -337,7 +306,6 @@ function renderVariants(){
 }
 function addVariantRow(){ formVariants.push({size:"", stock_qty:1}); renderVariants(); }
 function removeVariantRow(i){ formVariants.splice(i,1); renderVariants(); }
-
 async function saveProduct(){
   const btn = document.getElementById("saveBtn");
   const p = state.editing;
@@ -369,7 +337,6 @@ async function saveProduct(){
     btn.disabled = false; btn.textContent = "Сохранить";
   }
 }
-
 async function deleteProduct(id, fromModal){
   if (!confirm("Удалить товар безвозвратно?")) return;
   try{
@@ -380,9 +347,7 @@ async function deleteProduct(id, fromModal){
     showToast("Товар удалён");
   }catch(e){ showToast(e.message); }
 }
-
 // ---------------- CATEGORIES ----------------
-
 function renderCategories(el){
   el.innerHTML = `
     ${state.categories.length ? state.categories.map(c => `
@@ -429,11 +394,8 @@ async function deleteCategory(id){
     renderTab();
   }catch(e){ showToast(e.message); }
 }
-
 // ---------------- ORDERS ----------------
-
 const STATUS_LABELS = {new:"Новый", confirmed:"Подтверждён", shipped:"Отправлен", done:"Завершён", cancelled:"Отменён"};
-
 function renderOrders(el){
   if (!state.orders.length){ el.innerHTML = '<div class="empty">Заказов пока нет</div>'; return; }
   el.innerHTML = state.orders.map(o => `
@@ -461,9 +423,7 @@ async function updateOrderStatus(id, status){
     renderTab();
   }catch(e){ showToast(e.message); }
 }
-
 // ---------------- SETTINGS ----------------
-
 const SETTINGS_FIELDS = [
   ["shop_name","Название магазина"], ["description","Описание"],
   ["seller_username","Telegram продавца (без @)"], ["phone","Телефон"],
@@ -471,7 +431,6 @@ const SETTINGS_FIELDS = [
   ["social_links","Соцсети"], ["delivery_info","Информация о доставке"],
   ["work_hours","Часы работы"], ["currency","Валюта (символ)"],
 ];
-
 function renderSettings(el){
   const s = state.settings;
   el.innerHTML = SETTINGS_FIELDS.map(([field,label]) => `
@@ -488,7 +447,6 @@ async function saveSettings(){
     showToast("Настройки сохранены");
   }catch(e){ showToast(e.message); }
 }
-
 init();
 </script>
 </body>
