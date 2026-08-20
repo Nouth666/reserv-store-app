@@ -1,3 +1,4 @@
+Index · HTML
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -192,7 +193,7 @@ function showToast(msg){
 }
  
 function buildBuyMessage(product, variant){
-  let msg = `Здравствуйте! Интересует: ${product.name}`;
+  let msg = `Привет! Интересует: ${product.name}`;
   if (variant && variant.size) msg += `, размер ${variant.size}`;
   msg += `, цена ${money(product.price)}`;
   return msg;
